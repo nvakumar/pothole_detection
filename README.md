@@ -153,9 +153,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 Feel free to contribute or raise issues for any improvements or bugs!
 
-```
+
 
 ---
 
-This update clearly explains where your original and predicted images are stored, referencing your sample files `predict1.png` and `predict2.png` in the results folder, and original images in the images folder. Would you like me to help you with the `requirements.txt` or any setup instructions next?
-```
+
