@@ -3,7 +3,7 @@ import os
 import time
 import cv2
 import torch
-from torch.nn import Sequential, ModuleList
+from torch.nn import Sequential, ModuleList, Conv2d
 from ultralytics import YOLO
 from ultralytics.nn.tasks import DetectionModel
 from ultralytics.nn.modules.conv import Conv
@@ -16,7 +16,8 @@ torch.serialization.add_safe_globals([
     Conv,
     C2f,
     Sequential,
-    ModuleList
+    ModuleList,
+    Conv2d
 ])
 
 app = Flask(__name__)
@@ -33,7 +34,11 @@ ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov'}
 
 # ✅ Load YOLO model safely
 MODEL_PATH = 'models/yolo11n.pt'
-model = YOLO(MODEL_PATH)
+try:
+    model = YOLO(MODEL_PATH)
+except Exception as e:
+    print(f"❌ Error loading YOLO model: {e}")
+    raise e
 
 # Utility: Check file type
 def allowed_file(filename, allowed_set):
