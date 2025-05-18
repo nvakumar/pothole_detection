@@ -1,11 +1,19 @@
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response, send_from_directory
 import os
-from werkzeug.utils import secure_filename
-import torch
-from ultralytics import YOLO
-import ultralytics
-import cv2
 import time
+import cv2
+from werkzeug.utils import secure_filename
+from ultralytics import YOLO
+import torch.serialization
+
+# Add necessary safe globals for PyTorch deserialization
+import torch.nn.modules.container
+import ultralytics.nn.tasks
+
+torch.serialization.add_safe_globals([
+    torch.nn.modules.container.Sequential,
+    ultralytics.nn.tasks.DetectionModel
+])
 
 app = Flask(__name__)
 
@@ -19,10 +27,6 @@ ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov'}
 
 MODEL_PATH = 'models/yolo11n.pt'  # Adjust your model path here
-
-# Add DetectionModel to safe globals before loading the model
-torch.serialization.add_safe_globals([ultralytics.nn.tasks.DetectionModel])
-
 model = YOLO(MODEL_PATH)
 
 def allowed_file(filename, allowed_set):
@@ -58,11 +62,14 @@ def predict():
 def handle_image(path, filename):
     results = model(path)
     annotated_img = results[0].plot()
+    pothole_count = len(results[0].boxes) if results[0].boxes is not None else 0
+
     os.makedirs(app.config['RESULT_FOLDER'], exist_ok=True)
     result_img_path = os.path.join(app.config['RESULT_FOLDER'], filename)
     cv2.imwrite(result_img_path, cv2.cvtColor(annotated_img, cv2.COLOR_RGB2BGR))
     display_path = result_img_path.replace('static/', '')
-    return render_template('result.html', media_type='image', media_path=display_path)
+
+    return render_template('result.html', media_type='image', media_path=display_path, pothole_count=pothole_count)
 
 def handle_video(path, filename):
     # Instead of saving result video, we stream it in real-time
@@ -81,7 +88,7 @@ def get_frame(video_path):
             continue
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
-        time.sleep(0.03)  # Control frame rate (~30 FPS)
+        time.sleep(0.03)  # ~30 FPS
 
 @app.route('/video_feed/<filename>')
 def video_feed(filename):
