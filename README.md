@@ -3,7 +3,7 @@ Got it! I'll update the README to mention the sample images you added:
 ````markdown
 # Pothole Detection Web App
 
-![Pothole Detection](https://i.imgur.com/your-image-link.png)  
+![Pothole Detection] 
 *A web application for detecting potholes in images and videos using YOLO deep learning model.*
 
 ---
