@@ -2,8 +2,13 @@ from flask import Flask, render_template, request, Response
 import os
 import time
 import cv2
+import torch
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
+from ultralytics.nn.tasks import DetectionModel  # ⬅️ Needed for safe deserialization
+
+# ✅ Allow YOLO DetectionModel for torch deserialization
+torch.serialization.add_safe_globals([DetectionModel])
 
 app = Flask(__name__)
 
@@ -17,9 +22,9 @@ app.config['RESULT_FOLDER'] = RESULT_FOLDER
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov'}
 
-# ✅ Safe model loading
+# ✅ Load YOLO model safely
 MODEL_PATH = 'models/yolo11n.pt'
-model = YOLO(MODEL_PATH)  # No deserialization issues
+model = YOLO(MODEL_PATH)
 
 # Utility: Check file type
 def allowed_file(filename, allowed_set):
