@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NVA's Project - POTHOLE Detection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 8px;
+      border: none;
+      width: 100%;
+    }
+
+    button {
+      background-color: #00c6ff;
+      background-image: linear-gradient(45deg, #00c6ff, #0072ff);
+      color: white;
+      padding: 12px 25px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-image: linear-gradient(45deg, #0072ff, #00c6ff);
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>N.V.A's PROJECT</h1>
+    <h2>POTHOLE  Detection Upload</h2>
+    <form action="/predict" method="post" enctype="multipart/form-data">
+      <input type="file" name="media" accept="image/*,video/*" required />
+      <button type="submit">Upload & Predict</button>
+    </form>
+  </div>
+</body>
+</html>

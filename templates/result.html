@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detection Result</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        img {
+            max-width: 90%;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    {% if media_type == 'image' %}
+        <h2>Detected Image</h2>
+        <img src="{{ url_for('static', filename=media_path) }}" alt="Detected Image">
+    
+    {% elif media_type == 'video_stream' %}
+        <h2>Live Detected Video Stream</h2>
+        <img src="{{ url_for('video_feed', filename=video_name) }}" alt="Live Stream">
+    
+    {% else %}
+        <h2>No media available</h2>
+    {% endif %}
+</body>
+</html>
