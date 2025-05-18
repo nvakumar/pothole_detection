@@ -1,18 +1,20 @@
-from flask import Flask, render_template, request, Response, send_from_directory
+from flask import Flask, render_template, request, Response
 import os
 import time
 import cv2
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
-import torch.serialization
 
 # Add necessary safe globals for PyTorch deserialization
+import torch.serialization
 import torch.nn.modules.container
 import ultralytics.nn.tasks
+import ultralytics.nn.modules.conv
 
 torch.serialization.add_safe_globals([
     torch.nn.modules.container.Sequential,
-    ultralytics.nn.tasks.DetectionModel
+    ultralytics.nn.tasks.DetectionModel,
+    ultralytics.nn.modules.conv.Conv
 ])
 
 app = Flask(__name__)
