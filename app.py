@@ -3,12 +3,17 @@ import os
 import time
 import cv2
 import torch
-from werkzeug.utils import secure_filename
+from torch.nn import Sequential, ModuleList
 from ultralytics import YOLO
-from ultralytics.nn.tasks import DetectionModel  # ⬅️ Needed for safe deserialization
+from ultralytics.nn.tasks import DetectionModel
+from werkzeug.utils import secure_filename
 
-# ✅ Allow YOLO DetectionModel for torch deserialization
-torch.serialization.add_safe_globals([DetectionModel])
+# ✅ Fix deserialization errors by allowlisting trusted classes
+torch.serialization.add_safe_globals([
+    DetectionModel,
+    Sequential,
+    ModuleList
+])
 
 app = Flask(__name__)
 
