@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, Response
 import os
 from werkzeug.utils import secure_filename
+import torch
 from ultralytics import YOLO
+import ultralytics
 import cv2
 import time
 
@@ -17,6 +19,10 @@ ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov'}
 
 MODEL_PATH = 'models/yolo11n.pt'  # Adjust your model path here
+
+# Add DetectionModel to safe globals before loading the model
+torch.serialization.add_safe_globals([ultralytics.nn.tasks.DetectionModel])
+
 model = YOLO(MODEL_PATH)
 
 def allowed_file(filename, allowed_set):
