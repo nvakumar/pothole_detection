@@ -19,7 +19,7 @@ ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov'}
 
 # ✅ Safe model loading
 MODEL_PATH = 'models/yolo11n.pt'
-model = YOLO(MODEL_PATH)  # Handles weights safely
+model = YOLO(MODEL_PATH)  # No deserialization issues
 
 # Utility: Check file type
 def allowed_file(filename, allowed_set):
@@ -78,7 +78,7 @@ def get_frame(video_path):
         success, frame = video.read()
         if not success:
             break
-        results = model(frame[..., ::-1])
+        results = model(frame[..., ::-1])  # Convert BGR to RGB
         annotated = results[0].plot()
         ret, jpeg = cv2.imencode('.jpg', annotated)
         if not ret:
