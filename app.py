@@ -6,11 +6,15 @@ import torch
 from torch.nn import Sequential, ModuleList
 from ultralytics import YOLO
 from ultralytics.nn.tasks import DetectionModel
+from ultralytics.nn.modules.conv import Conv
+from ultralytics.nn.modules.block import C2f
 from werkzeug.utils import secure_filename
 
 # ✅ Fix deserialization errors by allowlisting trusted classes
 torch.serialization.add_safe_globals([
     DetectionModel,
+    Conv,
+    C2f,
     Sequential,
     ModuleList
 ])
