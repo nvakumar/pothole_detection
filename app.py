@@ -3,10 +3,7 @@ import os
 import time
 import cv2
 from werkzeug.utils import secure_filename
-import torch
-from ultralytics.nn.modules.conv import Conv
-from ultralytics.nn.tasks import DetectionModel
-from ultralytics.utils import DEFAULT_CFG_DICT
+from ultralytics import YOLO
 
 app = Flask(__name__)
 
@@ -20,18 +17,9 @@ app.config['RESULT_FOLDER'] = RESULT_FOLDER
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov'}
 
-# Fix for PyTorch restricted deserialization
-torch.serialization.add_safe_globals([
-    Conv,
-    DetectionModel
-])
-
-# Load the custom YOLO model safely
+# ✅ Safe model loading
 MODEL_PATH = 'models/yolo11n.pt'
-weights = torch.load(MODEL_PATH, map_location='cpu')
-model = DetectionModel(cfg=DEFAULT_CFG_DICT['yolov8n'])
-model.load_state_dict(weights['model'])
-model.eval()
+model = YOLO(MODEL_PATH)  # Handles weights safely
 
 # Utility: Check file type
 def allowed_file(filename, allowed_set):
