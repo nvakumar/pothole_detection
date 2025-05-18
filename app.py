@@ -5,39 +5,45 @@ import cv2
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
 
-# Add necessary safe globals for PyTorch deserialization
+# Fix for PyTorch restricted deserialization
+import torch
 import torch.serialization
 import torch.nn.modules.container
+import torch.nn.modules.conv
 import ultralytics.nn.tasks
-import ultralytics.nn.modules.conv
 
 torch.serialization.add_safe_globals([
+    torch.nn.modules.conv.Conv2d,
     torch.nn.modules.container.Sequential,
-    ultralytics.nn.tasks.DetectionModel,
-    ultralytics.nn.modules.conv.Conv
+    ultralytics.nn.tasks.DetectionModel
 ])
 
 app = Flask(__name__)
 
+# Folder configuration
 UPLOAD_FOLDER = 'static/uploads/'
 RESULT_FOLDER = 'static/results/'
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['RESULT_FOLDER'] = RESULT_FOLDER
 
+# File type restrictions
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov'}
 
-MODEL_PATH = 'models/yolo11n.pt'  # Adjust your model path here
+# Load your custom YOLO model
+MODEL_PATH = 'models/yolo11n.pt'
 model = YOLO(MODEL_PATH)
 
+# Utility: Check if uploaded file has valid extension
 def allowed_file(filename, allowed_set):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_set
 
+# Home page
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# Handle media file upload and detection
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'media' not in request.files:
@@ -61,6 +67,7 @@ def predict():
     else:
         return "Unsupported file type", 400
 
+# Handle image file
 def handle_image(path, filename):
     results = model(path)
     annotated_img = results[0].plot()
@@ -73,10 +80,11 @@ def handle_image(path, filename):
 
     return render_template('result.html', media_type='image', media_path=display_path, pothole_count=pothole_count)
 
+# Handle video file (real-time stream rendering)
 def handle_video(path, filename):
-    # Instead of saving result video, we stream it in real-time
     return render_template('result.html', media_type='video_stream', video_name=filename)
 
+# Video stream generator
 def get_frame(video_path):
     video = cv2.VideoCapture(video_path)
     while True:
@@ -92,11 +100,13 @@ def get_frame(video_path):
                b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
         time.sleep(0.03)  # ~30 FPS
 
+# Video stream endpoint
 @app.route('/video_feed/<filename>')
 def video_feed(filename):
     video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     return Response(get_frame(video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+# Run the app
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
