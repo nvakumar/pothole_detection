@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response, url_for
 import os
 import time
 import cv2
@@ -44,12 +44,10 @@ except Exception as e:
 def allowed_file(filename, allowed_set):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_set
 
-# Home route
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Upload and predict route
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'media' not in request.files:
@@ -73,7 +71,6 @@ def predict():
     else:
         return "Unsupported file type", 400
 
-# Handle image prediction
 def handle_image(path, filename):
     results = model(path)
     annotated_img = results[0].plot()
@@ -82,37 +79,41 @@ def handle_image(path, filename):
     os.makedirs(app.config['RESULT_FOLDER'], exist_ok=True)
     result_img_path = os.path.join(app.config['RESULT_FOLDER'], filename)
     cv2.imwrite(result_img_path, cv2.cvtColor(annotated_img, cv2.COLOR_RGB2BGR))
-    display_path = result_img_path.replace('static/', '')
 
-    return render_template('result.html', media_type='image', media_path=display_path, pothole_count=pothole_count)
+    # Use relative path to static folder
+    display_path = os.path.join('results', filename)
 
-# Handle video preview
+    return render_template('result.html',
+                           media_type='image',
+                           media_path=display_path,
+                           pothole_count=pothole_count)
+
 def handle_video(path, filename):
-    return render_template('result.html', media_type='video_stream', video_name=filename)
+    return render_template('result.html',
+                           media_type='video_stream',
+                           video_name=filename)
 
-# Video frame generator
 def get_frame(video_path):
     video = cv2.VideoCapture(video_path)
     while True:
         success, frame = video.read()
         if not success:
             break
-        results = model(frame[..., ::-1])  # Convert BGR to RGB
+        results = model(frame[..., ::-1])
         annotated = results[0].plot()
         ret, jpeg = cv2.imencode('.jpg', annotated)
         if not ret:
             continue
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
-        time.sleep(0.03)  # ~30 FPS
+        time.sleep(0.03)  # 30 FPS
 
-# Video feed route
 @app.route('/video_feed/<filename>')
 def video_feed(filename):
     video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    return Response(get_frame(video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(get_frame(video_path),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# Start the Flask server
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=port)
